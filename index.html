@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Cek Poin Praktikum</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',sans-serif;background:#f0f4f8;min-height:100vh;padding:16px}
+.wrap{max-width:1000px;margin:0 auto}
+
+.header{background:linear-gradient(135deg,#1e3a8a,#2563eb);color:#fff;padding:28px 24px;border-radius:14px;text-align:center;margin-bottom:20px}
+.header h1{font-size:1.6rem;margin-bottom:6px}
+.header p{font-size:0.9rem;opacity:.85}
+
+.search-box{background:#fff;padding:18px 20px;border-radius:12px;margin-bottom:14px;box-shadow:0 2px 8px rgba(0,0,0,.07)}
+.search-box label{display:block;font-weight:600;color:#374151;margin-bottom:10px;font-size:.9rem}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.row input{flex:1;min-width:180px;padding:11px 14px;border:2px solid #e5e7eb;border-radius:8px;font-size:.95rem;outline:none;transition:border-color .2s}
+.row input:focus{border-color:#2563eb}
+.btn{padding:11px 18px;background:#2563eb;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:.88rem;font-weight:600;white-space:nowrap;transition:background .2s}
+.btn:hover{background:#1d4ed8}
+.btn.sec{background:#f1f5f9;color:#374151;border:1px solid #e2e8f0}
+.btn.sec:hover{background:#e2e8f0}
+
+.status{display:flex;justify-content:space-between;align-items:center;padding:9px 14px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;margin-bottom:14px;font-size:.82rem;color:#1d4ed8;flex-wrap:wrap;gap:6px}
+
+/* RESULT CARD */
+.result-card{background:#fff;border-radius:12px;padding:20px;margin-bottom:16px;box-shadow:0 2px 12px rgba(0,0,0,.08);border-left:5px solid #2563eb;display:none}
+.result-card.show{display:block}
+.rc-top{display:flex;align-items:center;gap:14px;margin-bottom:16px;flex-wrap:wrap}
+.avatar{width:52px;height:52px;border-radius:50%;background:#dbeafe;display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:700;color:#1d4ed8;flex-shrink:0}
+.rc-name{font-size:1.1rem;font-weight:700;color:#1e3a8a}
+.rc-meta{font-size:.83rem;color:#6b7280;margin-top:3px;display:flex;gap:10px;flex-wrap:wrap}
+.badge-sesi{display:inline-block;padding:2px 10px;border-radius:20px;font-size:.78rem;font-weight:600;background:#fef9c3;color:#854d0e}
+.badge-dice{display:inline-flex;align-items:center;gap:5px;padding:2px 10px;border-radius:20px;font-size:.78rem;font-weight:600}
+.badge-dice.ya{background:#dcfce7;color:#166534}
+.badge-dice.tidak{background:#fee2e2;color:#991b1b}
+
+.pts-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px;margin-bottom:14px}
+.pt{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:10px 8px;text-align:center}
+.pt .lbl{font-size:.72rem;color:#64748b;margin-bottom:3px}
+.pt .val{font-size:1.15rem;font-weight:700;color:#1e3a8a}
+.pt.rm .val{color:#0369a1}
+.pt.rl .val{color:#7c3aed}
+.pt.empty .val{color:#d1d5db}
+
+.total-box{background:linear-gradient(135deg,#1e3a8a,#2563eb);color:#fff;border-radius:10px;padding:14px;text-align:center}
+.total-box .tl{font-size:.85rem;opacity:.85}
+.total-box .tv{font-size:2rem;font-weight:800}
+
+/* FILTER BAR */
+.filter-bar{background:#fff;padding:14px 18px;border-radius:10px;margin-bottom:14px;box-shadow:0 2px 8px rgba(0,0,0,.06);display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.filter-bar label{font-size:.85rem;color:#6b7280;font-weight:600}
+.filter-bar select{padding:7px 12px;border:1px solid #e2e8f0;border-radius:7px;font-size:.85rem;outline:none;color:#374151}
+
+/* TABLE */
+.tbl-wrap{background:#fff;border-radius:12px;padding:18px 20px;box-shadow:0 2px 8px rgba(0,0,0,.07);overflow-x:auto}
+.tbl-wrap h2{font-size:.95rem;color:#374151;margin-bottom:14px;font-weight:600}
+table{width:100%;border-collapse:collapse;font-size:.82rem;min-width:700px}
+thead tr{background:#1e3a8a;color:#fff}
+thead th{padding:10px 12px;text-align:left;white-space:nowrap;font-weight:600}
+tbody tr:nth-child(even){background:#f8fafc}
+tbody tr:hover{background:#eff6ff;cursor:pointer}
+tbody td{padding:9px 12px;border-bottom:1px solid #f1f5f9;color:#374151;white-space:nowrap}
+.t-total{background:#dbeafe;color:#1d4ed8;padding:2px 10px;border-radius:20px;font-weight:700;font-size:.82rem}
+.t-sesi{padding:2px 8px;border-radius:12px;font-size:.75rem;font-weight:600;background:#fef9c3;color:#854d0e}
+.t-dice.ya{color:#166534;font-weight:700}
+.t-dice.tidak{color:#dc2626}
+.hl{background:#fef9c3!important}
+.rank-1{color:#d97706;font-weight:700}
+.rank-2{color:#6b7280;font-weight:700}
+.rank-3{color:#b45309;font-weight:700}
+
+.empty,.loading{text-align:center;padding:36px 20px;color:#9ca3af}
+.spinner{width:32px;height:32px;border:3px solid #e5e7eb;border-top-color:#2563eb;border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 10px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.footer{text-align:center;margin-top:20px;color:#9ca3af;font-size:.78rem}
+
+@media(max-width:600px){
+  .header h1{font-size:1.3rem}
+  .pts-grid{grid-template-columns:repeat(auto-fill,minmax(75px,1fr))}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="header">
+  <h1>&#128203; Cek Poin Praktikum</h1>
+  <p>Cari nama atau NPM untuk melihat poin dan status kehadiran Color Dice</p>
+</div>
+
+<div class="search-box">
+  <label>&#128269; Cari Nama atau NPM Mahasiswa</label>
+  <div class="row">
+    <input type="text" id="cari" placeholder="Ketik nama atau NPM..." oninput="filter()"/>
+    <button class="btn" onclick="loadData()">&#128260; Refresh Data</button>
+    <button class="btn sec" onclick="clearSearch()">&#10005; Hapus</button>
+  </div>
+</div>
+
+<div class="status">
+  <span id="stTxt">&#9203; Memuat data...</span>
+  <span id="stTime"></span>
+</div>
+
+<!-- RESULT CARD -->
+<div class="result-card" id="rc">
+  <div class="rc-top">
+    <div class="avatar" id="rcAvatar"></div>
+    <div>
+      <div class="rc-name" id="rcName"></div>
+      <div class="rc-meta">
+        <span id="rcNPM"></span>
+        <span id="rcSesi"></span>
+        <span id="rcDice"></span>
+      </div>
+    </div>
+  </div>
+  <div class="pts-grid" id="rcPts"></div>
+  <div class="total-box">
+    <div class="tl">Total Poin</div>
+    <div class="tv" id="rcTotal"></div>
+  </div>
+</div>
+
+<!-- FILTER -->
+<div class="filter-bar">
+  <label>Filter Sesi:</label>
+  <select id="fSesi" onchange="filter()">
+    <option value="">Semua Sesi</option>
+    <option value="Sesi 1">Sesi 1</option>
+    <option value="Sesi 2">Sesi 2</option>
+  </select>
+  <label style="margin-left:10px">Color Dice:</label>
+  <select id="fDice" onchange="filter()">
+    <option value="">Semua</option>
+    <option value="ya">Sudah Terpanggil</option>
+    <option value="tidak">Belum Terpanggil</option>
+  </select>
+  <span id="fCount" style="margin-left:auto;font-size:.82rem;color:#6b7280"></span>
+</div>
+
+<!-- TABLE -->
+<div class="tbl-wrap">
+  <h2>&#128202; Daftar Semua Mahasiswa</h2>
+  <div id="tblBox">
+    <div class="loading"><div class="spinner"></div>Memuat data dari Google Sheets...</div>
+  </div>
+</div>
+
+<div class="footer">
+  Data diambil langsung dari Google Sheets &middot; Klik Refresh untuk data terbaru
+</div>
+
+</div><!-- /wrap -->
+
+<script>
+// ==========================================================
+// GANTI URL INI DENGAN LINK CSV GOOGLE SHEETS KAMU!
+// ==========================================================
+const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR_WOrWe9SoHhGjNB01xEL5dpm9JhrLCrAU91LA3Yxc_YH0CSldedTa1bolFGwnqImlTqc94xxkUd8F/pub?gid=1860929630&single=true&output=csv';
+// ==========================================================
+
+let allData = [], headers = [];
+
+async function loadData() {
+  document.getElementById('stTxt').textContent = '⏳ Memuat data terbaru...';
+  document.getElementById('tblBox').innerHTML = '<div class="loading"><div class="spinner"></div>Memuat data...</div>';
+  document.getElementById('rc').classList.remove('show');
+
+  try {
+    const resp = await fetch(SHEET_URL + '&t=' + Date.now());
+    const text = await resp.text();
+
+    const rows = text.trim().split('\n').map(r => {
+      const result = [];
+      let cur = '', inQ = false;
+      for (let i = 0; i < r.length; i++) {
+        if (r[i] === '"') { inQ = !inQ; }
+        else if (r[i] === ',' && !inQ) { result.push(cur.trim()); cur = ''; }
+        else cur += r[i];
+      }
+      result.push(cur.trim());
+      return result;
+    });
+
+    headers = rows[0];
+    allData = rows.slice(1).filter(r => r[2] && r[2].trim() !== '');
+
+    const now = new Date().toLocaleTimeString('id-ID');
+    document.getElementById('stTxt').textContent = '✅ Data berhasil dimuat — ' + allData.length + ' mahasiswa';
+    document.getElementById('stTime').textContent = 'Update: ' + now;
+
+    filter();
+  } catch(e) {
+    document.getElementById('stTxt').textContent = '❌ Gagal memuat data. Cek koneksi.';
+    document.getElementById('tblBox').innerHTML = '<div class="empty">❌ Gagal memuat data.<br>Pastikan link Google Sheets sudah benar dan sudah di-publish.</div>';
+  }
+}
+
+function isDice(val) {
+  val = (val || '').toString().toUpperCase().trim();
+  return val === 'TRUE' || val === '1' || val === 'YA' || val === 'YES' || val === '✓' || val === 'BENAR';
+}
+
+function filter() {
+  const kw    = document.getElementById('cari').value.toLowerCase().trim();
+  const fSesi = document.getElementById('fSesi').value;
+  const fDice = document.getElementById('fDice').value;
+
+  let filtered = allData.filter(r => {
+    const npm  = (r[2] || '').toLowerCase();
+    const nama = (r[3] || '').toLowerCase();
+    const sesi = r[1] || '';
+    const dice = isDice(r[4]);
+
+    const matchKw   = !kw   || npm.includes(kw) || nama.includes(kw);
+    const matchSesi = !fSesi || sesi === fSesi;
+    const matchDice = !fDice || (fDice === 'ya' ? dice : !dice);
+    return matchKw && matchSesi && matchDice;
+  });
+
+  document.getElementById('fCount').textContent = filtered.length + ' mahasiswa';
+  renderTable(filtered, kw);
+
+  if (kw && filtered.length === 1) showCard(filtered[0]);
+  else if (!kw) document.getElementById('rc').classList.remove('show');
+}
+
+function renderTable(data, kw) {
+  if (!data.length) {
+    document.getElementById('tblBox').innerHTML = '<div class="empty">&#128269; Tidak ada data yang ditemukan.</div>';
+    return;
+  }
+
+  // Cari kolom poin (RM/RL)
+  const ptCols = [];
+  headers.forEach((h, i) => {
+    if (i >= 5 && h.toUpperCase() !== 'TOTAL' && i < headers.length - 1) ptCols.push(i);
+  });
+  const totalIdx = headers.length - 1;
+
+  // Sort by total descending untuk ranking
+  const sorted = [...data].sort((a, b) => parseFloat(b[totalIdx]||0) - parseFloat(a[totalIdx]||0));
+  const rankMap = {};
+  sorted.forEach((r, i) => { rankMap[r[2]] = i + 1; });
+
+  let html = '<table><thead><tr>';
+  html += '<th>#</th><th>Sesi</th><th>NPM</th><th>Nama</th><th>Color Dice</th>';
+  ptCols.forEach(i => { html += '<th>' + (headers[i]||'') + '</th>'; });
+  html += '<th>Total</th></tr></thead><tbody>';
+
+  data.forEach(r => {
+    const rank = rankMap[r[2]];
+    const dice = isDice(r[4]);
+    const hl   = kw && ((r[2]||'').toLowerCase().includes(kw) || (r[3]||'').toLowerCase().includes(kw));
+    const rankCls = rank === 1 ? 'rank-1' : rank === 2 ? 'rank-2' : rank === 3 ? 'rank-3' : '';
+
+    html += '<tr class="' + (hl ? 'hl' : '') + '" onclick="showCard(\'' + escJs(r[2]) + '\')">';
+    html += '<td class="' + rankCls + '">' + (rank <= 3 ? ['🥇','🥈','🥉'][rank-1] : rank) + '</td>';
+    html += '<td><span class="t-sesi">' + (r[1]||'-') + '</span></td>';
+    html += '<td>' + (r[2]||'-') + '</td>';
+    html += '<td>' + (r[3]||'-') + '</td>';
+    html += '<td class="t-dice ' + (dice?'ya':'tidak') + '">' + (dice ? '✅ Terpanggil' : '—') + '</td>';
+    ptCols.forEach(i => {
+      html += '<td style="text-align:center">' + (r[i] && r[i]!=='0' && r[i]!=='' ? '<b>' + r[i] + '</b>' : '<span style="color:#d1d5db">—</span>') + '</td>';
+    });
+    html += '<td><span class="t-total">' + (r[totalIdx]||'0') + '</span></td>';
+    html += '</tr>';
+  });
+
+  html += '</tbody></table>';
+  document.getElementById('tblBox').innerHTML = html;
+}
+
+function showCard(npmOrRow) {
+  const r = typeof npmOrRow === 'string'
+    ? allData.find(x => x[2] === npmOrRow)
+    : npmOrRow;
+  if (!r) return;
+
+  const totalIdx = headers.length - 1;
+  const ptCols   = [];
+  headers.forEach((h, i) => {
+    if (i >= 5 && h.toUpperCase() !== 'TOTAL' && i < headers.length - 1) ptCols.push(i);
+  });
+
+  const nama = r[3] || '-';
+  const dice = isDice(r[4]);
+  const initials = nama.split(' ').map(w => w[0]||'').join('').slice(0,2).toUpperCase();
+
+  document.getElementById('rcAvatar').textContent = initials;
+  document.getElementById('rcName').textContent   = nama;
+  document.getElementById('rcNPM').textContent    = 'NPM: ' + (r[2]||'-');
+  document.getElementById('rcSesi').innerHTML     = '<span class="badge-sesi">' + (r[1]||'-') + '</span>';
+  document.getElementById('rcDice').innerHTML     = '<span class="badge-dice ' + (dice?'ya':'tidak') + '">'
+    + (dice ? '✅ Sudah Terpanggil Color Dice' : '— Belum Terpanggil') + '</span>';
+  document.getElementById('rcTotal').textContent  = r[totalIdx] || '0';
+
+  let pHtml = '';
+  ptCols.forEach(i => {
+    const h    = headers[i] || '';
+    const isRM = h.toUpperCase().startsWith('RM');
+    const isRL = h.toUpperCase().startsWith('RL');
+    const cls  = isRM ? 'rm' : isRL ? 'rl' : '';
+    const empty = !r[i] || r[i] === '0' || r[i] === '';
+    pHtml += '<div class="pt ' + cls + (empty?' empty':'') + '">'
+      + '<div class="lbl">' + h + '</div>'
+      + '<div class="val">' + (empty ? '—' : r[i]) + '</div>'
+      + '</div>';
+  });
+  document.getElementById('rcPts').innerHTML = pHtml;
+
+  const card = document.getElementById('rc');
+  card.classList.add('show');
+  card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function clearSearch() {
+  document.getElementById('cari').value = '';
+  document.getElementById('fSesi').value = '';
+  document.getElementById('fDice').value = '';
+  document.getElementById('rc').classList.remove('show');
+  filter();
+}
+
+function escJs(s) { return (s||'').replace(/'/g, "\\'"); }
+
+loadData();
+</script>
+</body>
+</html>
